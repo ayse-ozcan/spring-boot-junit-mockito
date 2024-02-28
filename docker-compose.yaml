@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  postgres-dev:
+    image: postgres
+    container_name: postgres-dev
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASS}
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=DrugsDb
+    ports:
+      - 5432:5432
+
+
+

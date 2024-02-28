@@ -1,0 +1,13 @@
+server:
+  port: 9090
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: ${POSTGRES_PASS}
+    url: jdbc:postgresql://localhost:5432/DrugsDb
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
