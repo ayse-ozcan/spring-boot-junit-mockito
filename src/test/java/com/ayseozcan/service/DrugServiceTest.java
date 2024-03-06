@@ -1,7 +1,7 @@
 package com.ayseozcan.service;
 
 import com.ayseozcan.dto.SaveDrugDto;
-import com.ayseozcan.repository.IDrugRepository;
+import com.ayseozcan.repository.DrugRepository;
 import com.ayseozcan.repository.entity.Drug;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,29 +17,26 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Drug service test class")
-public class DrugServiceTest {
+class DrugServiceTest {
 
     @Mock
-    private IDrugRepository drugRepository;
+    private DrugRepository drugRepository;
 
     @InjectMocks
     private DrugService drugService;
 
     @Test
     @DisplayName("Saving drug")
-    public void testSaveDrug() {
+    void shouldSaveDrugSuccessfully() {
 
         // Given
-        SaveDrugDto dto = new SaveDrugDto();
-        dto.setDrugName("Sodium Chloride");
-        dto.setCompanyName("Baxter Healthcare Corporation");
-        dto.setStock(809);
+        SaveDrugDto dto = new SaveDrugDto("Sodium Chloride", "Baxter Healthcare Corporation", 809);
 
         Drug savedDrug = new Drug();
         savedDrug.setId(1L);
-        savedDrug.setDrugName(dto.getDrugName());
-        savedDrug.setCompanyName(dto.getCompanyName());
-        savedDrug.setStock(dto.getStock());
+        savedDrug.setDrugName(dto.drugName());
+        savedDrug.setCompanyName(dto.companyName());
+        savedDrug.setStock(dto.stock());
 
         // Mock the calls
         when(drugRepository.save(any(Drug.class))).thenReturn(savedDrug);
@@ -52,21 +49,21 @@ public class DrugServiceTest {
 //        verify(drugRepository).save(drugArgumentCaptor.capture());
 //        Drug capturedDrug = drugArgumentCaptor.getValue();
 //
-//        assertEquals(dto.getDrugName(), capturedDrug.getDrugName());
-//        assertEquals(dto.getCompanyName(), capturedDrug.getCompanyName());
-//        assertEquals(dto.getStock(), capturedDrug.getStock());
+//        assertEquals(dto.drugName(), capturedDrug.getDrugName());
+//        assertEquals(dto.companyName(), capturedDrug.getCompanyName());
+//        assertEquals(dto.stock(), capturedDrug.getStock());
 
         assertEquals(savedDrug.getId(), result.getId());
         assertEquals(savedDrug.getDrugName(), result.getDrugName());
         assertEquals(savedDrug.getCompanyName(), result.getCompanyName());
         assertEquals(savedDrug.getStock(), result.getStock());
 
-        verify(drugRepository, times(1)).save(any(Drug.class));
+        verify(drugRepository).save(any(Drug.class));
     }
 
     @Test
     @DisplayName("Find drug by id - Success")
-    public void testFindDrugById() {
+    void shouldFindDrugById_Success() {
 
         // Given
         Long drugId = 1L;
@@ -86,21 +83,23 @@ public class DrugServiceTest {
         assertTrue(result.isPresent());
         assertEquals(mockDrug, result.get());
 
-        verify(drugRepository, times(1)).findById(drugId);
+        verify(drugRepository).findById(drugId);
     }
 
     @Test
     @DisplayName("Find drug by id - Not Found")
-    public void testFindDrugById_NotFound() {
+    void shouldFindDrugById_NotFound() {
 
         // Given
         Long nonExistingDrugId = 2L;
         when(drugRepository.findById(nonExistingDrugId)).thenReturn(Optional.empty());
 
-        // When & Then
-        Exception exception = assertThrows(RuntimeException.class, () -> drugService.findById(nonExistingDrugId));
-        assertEquals("Drug not found", exception.getMessage());
+        // When
+        Optional<Drug> result = drugService.findById(nonExistingDrugId);
 
-        verify(drugRepository, times(1)).findById(nonExistingDrugId);
+        // Then
+        assertEquals(Optional.empty(), result);
+
+        verify(drugRepository).findById(nonExistingDrugId);
     }
 }

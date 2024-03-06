@@ -24,28 +24,24 @@ This dependency, which includes essential libraries like JUnit and Mockito, help
 @Service
 public class DrugService {
 
-    private final IDrugRepository drugRepository;
+    private final DrugRepository drugRepository;
 
-    public DrugService(IDrugRepository drugRepository) {
+    public DrugService(DrugRepository drugRepository) {
         this.drugRepository = drugRepository;
     }
 
     public Drug save(SaveDrugDto dto) {
 
         Drug drug = new Drug();
-        drug.setDrugName(dto.getDrugName());
-        drug.setCompanyName(dto.getCompanyName());
-        drug.setStock(dto.getStock());
+        drug.setDrugName(dto.drugName());
+        drug.setCompanyName(dto.companyName());
+        drug.setStock(dto.stock());
 
         return drugRepository.save(drug);
     }
 
     public Optional<Drug> findById(Long id) {
-        Optional<Drug> drug = drugRepository.findById(id);
-        if (drug.isPresent()) {
-            return drug;
-        }
-        throw new RuntimeException("Drug not found");
+        return drugRepository.findById(id);
     }
 }
 ```
@@ -55,29 +51,26 @@ public class DrugService {
 ```java
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Drug service test class")
-public class DrugServiceTest {
+class DrugServiceTest {
 
     @Mock
-    private IDrugRepository drugRepository;
+    private DrugRepository drugRepository;
 
     @InjectMocks
     private DrugService drugService;
 
     @Test
     @DisplayName("Saving drug")
-    public void testSaveDrug() {
+    void shouldSaveDrugSuccessfully() {
 
         // Given
-        SaveDrugDto dto = new SaveDrugDto();
-        dto.setDrugName("Sodium Chloride");
-        dto.setCompanyName("Baxter Healthcare Corporation");
-        dto.setStock(809);
+        SaveDrugDto dto = new SaveDrugDto("Sodium Chloride", "Baxter Healthcare Corporation", 809);
 
         Drug savedDrug = new Drug();
         savedDrug.setId(1L);
-        savedDrug.setDrugName(dto.getDrugName());
-        savedDrug.setCompanyName(dto.getCompanyName());
-        savedDrug.setStock(dto.getStock());
+        savedDrug.setDrugName(dto.drugName());
+        savedDrug.setCompanyName(dto.companyName());
+        savedDrug.setStock(dto.stock());
 
         // Mock the calls
         when(drugRepository.save(any(Drug.class))).thenReturn(savedDrug);
@@ -91,12 +84,12 @@ public class DrugServiceTest {
         assertEquals(savedDrug.getCompanyName(), result.getCompanyName());
         assertEquals(savedDrug.getStock(), result.getStock());
 
-        verify(drugRepository, times(1)).save(any(Drug.class));
+        verify(drugRepository).save(any(Drug.class));
     }
 
     @Test
     @DisplayName("Find drug by id - Success")
-    public void testFindDrugById() {
+    void shouldFindDrugById_Success() {
 
         // Given
         Long drugId = 1L;
@@ -116,22 +109,24 @@ public class DrugServiceTest {
         assertTrue(result.isPresent());
         assertEquals(mockDrug, result.get());
 
-        verify(drugRepository, times(1)).findById(drugId);
+        verify(drugRepository).findById(drugId);
     }
 
     @Test
     @DisplayName("Find drug by id - Not Found")
-    public void testFindDrugById_NotFound() {
+    void shouldFindDrugById_NotFound() {
 
         // Given
         Long nonExistingDrugId = 2L;
         when(drugRepository.findById(nonExistingDrugId)).thenReturn(Optional.empty());
 
-        // When & Then
-        Exception exception = assertThrows(RuntimeException.class, () -> drugService.findById(nonExistingDrugId));
-        assertEquals("Drug not found", exception.getMessage());
+        // When
+        Optional<Drug> result = drugService.findById(nonExistingDrugId);
 
-        verify(drugRepository, times(1)).findById(nonExistingDrugId);
+        // Then
+        assertEquals(Optional.empty(), result);
+
+        verify(drugRepository).findById(nonExistingDrugId);
     }
 }
 ```

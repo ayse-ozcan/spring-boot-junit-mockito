@@ -1,39 +1,17 @@
 package com.ayseozcan.dto;
 
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+public record SaveDrugDto(String drugName, String companyName, int stock) {
 
-public class SaveDrugDto {
-
-    @NotEmpty(message = "Name field cannot be empty")
-    private String drugName;
-
-    @NotEmpty(message = "Company field cannot be empty")
-    private String companyName;
-    @NotNull(message = "Stock field cannot be null")
-    private int stock;
-
-    public String getDrugName() {
-        return drugName;
+    public SaveDrugDto {
+        if (drugName.isBlank()) {
+            throw new IllegalArgumentException("Drug name cannot be blank");
+        }
+        if (companyName.isBlank()) {
+            throw new IllegalArgumentException("Company name cannot be blank");
+        }
+        if (stock < 0) {
+            throw new IllegalArgumentException("Stock cannot be negative");
+        }
     }
 
-    public String getCompanyName() {
-        return companyName;
-    }
-
-    public int getStock() {
-        return stock;
-    }
-
-    public void setDrugName(String drugName) {
-        this.drugName = drugName;
-    }
-
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
-    }
-
-    public void setStock(int stock) {
-        this.stock = stock;
-    }
 }
